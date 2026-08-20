@@ -2,6 +2,7 @@
 module Main where
 
 import Data.List (elemIndex, genericIndex)
+import Data.Ord (comparing)
 
 data Poker     = Card CardType | Joker JokerType
 data JokerType = RedJoker | BlackJoker
@@ -25,6 +26,23 @@ listAllCard = (*) <$> colors <*> numbers
 
 num :: Int -> Number
 num = genericIndex primes . (+ fstIndex)
+
+compareCard :: Poker -> Poker -> Ordering
+compareCard = comparing (\c -> (rankOf c, suitOf c))
+
+rankOf :: Poker -> Int
+rankOf (Joker BlackJoker) = 99
+rankOf (Joker RedJoker)   = 100
+rankOf (Card n) = case fmap snd $ factor n of
+    Just r -> if calc r == 1 then 14 else calc r
+    Nothing -> 0
+  where calc p = fromInteger (primeIndex p) - fstIndex
+
+suitOf :: Poker -> Int
+suitOf (Card n) = case factor n of
+    Just (p, _) -> fromInteger (primeIndex p)
+    Nothing     -> 0
+suitOf _ = 0
 
 parsePoker :: Poker -> String
 parsePoker (Joker n) = show n
