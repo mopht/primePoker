@@ -6,7 +6,7 @@ import Data.Ord (comparing)
 
 data Poker     = Card CardType | Joker JokerType
 data JokerType = RedJoker | BlackJoker
-    deriving Show
+    deriving (Eq, Show)
 
 type CardType = Integer
 type Color    = Integer
@@ -34,9 +34,10 @@ rankOf :: Poker -> Int
 rankOf (Joker BlackJoker) = 99
 rankOf (Joker RedJoker)   = 100
 rankOf (Card n) = case fmap snd $ factor n of
-    Just r -> if calc r == 1 then 14 else calc r
+    Just r -> size $ calc r
     Nothing -> 0
   where calc p = fromInteger (primeIndex p) - fstIndex
+        size l = if l < 3 then 13 + l else l
 
 suitOf :: Poker -> Int
 suitOf (Card n) = case factor n of
