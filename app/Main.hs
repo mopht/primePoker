@@ -22,13 +22,13 @@ listAllPoker = map Card listAllCard
 listAllCard :: [CardType]
 listAllCard = (*) <$> colors <*> numbers
   where numbers = take 13 . drop colorCnt $ primes
-        colors = take colorCnt primes
+        colors  = take colorCnt primes
 
 num :: Int -> Number
 num = genericIndex primes . (+ fstIndex)
 
 compareCard :: Poker -> Poker -> Ordering
-compareCard = comparing (\c -> (rankOf c, suitOf c))
+compareCard = comparing $ liftA2 (,) rankOf suitOf
 
 rankOf :: Poker -> Int
 rankOf (Joker BlackJoker) = 99
