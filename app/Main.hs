@@ -20,7 +20,7 @@ listAllPoker = map Card listAllCard
             <> map Joker [RedJoker, BlackJoker]
 
 listAllCard :: [CardType]
-listAllCard = (*) <$> colors <*> numbers
+listAllCard = liftA2 (*) colors numbers
   where numbers = take 13 . drop colorCnt $ primes
         colors  = take colorCnt primes
 
@@ -36,12 +36,12 @@ rankOf (Joker RedJoker)   = 100
 rankOf (Card n) = case fmap snd $ factor n of
     Just r -> size $ calc r
     Nothing -> 0
-  where calc p = fromInteger (primeIndex p) - fstIndex
-        size l = if l < 3 then 13 + l else l
+  where calc = (subtract fstIndex) . fromInteger . primeIndex
+        size l | l < 3 = 13 + l | otherwise = l
 
 suitOf :: Poker -> Int
 suitOf (Card n) = case factor n of
-    Just (p, _) -> fromInteger (primeIndex p)
+    Just (p, _) -> fromInteger . primeIndex $ p
     Nothing     -> 0
 suitOf _ = 0
 
@@ -50,10 +50,10 @@ parsePoker (Joker n) = show n
 parsePoker (Card n)  = parseCard n
 
 parseCard :: CardType -> String
-parseCard = liftA2 (<>) parseCardColor parseCardNumber
+parseCard = liftA2 (++) parseCardColor parseCardNumber
 
 parseCardColor :: CardType -> String
-parseCardColor n = case fmap fst (factor n) of
+parseCardColor n = case fmap fst $ factor n of
     Just p | p == spades   -> "Spade "
            | p == hearts   -> "Heart "
            | p == diamonds -> "Diamond "
@@ -82,9 +82,8 @@ spades, hearts, diamonds, clubs :: Color
 
 primes :: [Integer]
 primes = sieve [2..]
-  where
-    sieve (p:xs) = p : sieve [x | x <- xs, mod x p /= 0]
-    sieve []     = []
+  where sieve (p:xs) = p : sieve [x | x <- xs, mod x p /= 0]
+        sieve []     = []
 
 primeIndex :: Integer -> Integer
 primeIndex p = case elemIndex p primes of
